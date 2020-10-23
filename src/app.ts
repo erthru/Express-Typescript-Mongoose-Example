@@ -4,10 +4,12 @@ import { PORT } from "./helpers/constants";
 import cors from "cors";
 import db from "./configs/db";
 import routes from "./routes";
+import logger from "./configs/logger";
 
 const app = express();
 const server: Server = createServer(app);
 
+app.use(logger);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static("public"));
