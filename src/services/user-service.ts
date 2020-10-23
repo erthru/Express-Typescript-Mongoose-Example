@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import userSchema, { UserDocument } from "../schema/user-schema";
+import userSchema, { UserDocument } from "../schemas/user-schema";
 import BaseService from "./base-service";
 
 export default class UserService extends BaseService {

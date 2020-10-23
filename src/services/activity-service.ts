@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import BaseService from "./base-service";
-import activitySchema, { ActivityDocument } from "../schema/activity-schema";
-import { UserDocument } from "../schema/user-schema";
+import activitySchema, { ActivityDocument } from "../schemas/activity-schema";
+import { UserDocument } from "../schemas/user-schema";
 
 export default class ActivityService extends BaseService {
     constructor(req: Request, res: Response) {

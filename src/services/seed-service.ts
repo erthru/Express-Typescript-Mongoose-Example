@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import userSchema from "../schema/user-schema";
+import userSchema from "../schemas/user-schema";
 import BaseService from "./base-service";
 import faker from "faker";
-import activitySchema from "../schema/activity-schema";
+import activitySchema from "../schemas/activity-schema";
 
 export default class SeedService extends BaseService {
     constructor(req: Request, res: Response) {
