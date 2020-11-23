@@ -1,44 +1,25 @@
 import { Request, Response } from "express";
+import { RouterGet, RouterRoot } from "../decorators/router-decorator";
 import { isEmpty, splice } from "../helpers/basic-tools";
 
-export default class BaseService {
+@RouterRoot("/")
+export default class BaseRouter {
     protected req!: Request;
     protected res!: Response;
-    protected pageQuery!: number;
-    protected limitQuery!: number;
+    protected pageNumber!: number;
+    protected limitNumber!: number;
     protected skipNumber!: number;
     protected filterQuery!: any;
     protected sortQuery!: any;
-    protected _idFromParams!: string;
 
     constructor(req: Request, res: Response) {
         this.req = req;
         this.res = res;
-        this.pageQuery = parseInt(this.req.query.page as string);
-        this.limitQuery = parseInt(req.query.limit as string);
-        this.skipNumber = (this.pageQuery - 1) * this.limitQuery;
-        this.filterQuery = this.queryToObject(req.query.filter as string);
-        this.sortQuery = this.queryToObject(req.query.sort as string);
-        this._idFromParams = this.req.params.id;
-    }
-
-    protected searchQuery(fields: Array<string>): any {
-        const filter: any = {};
-
-        if (fields.length > 0 && !isEmpty(this.req.query.search)) {
-            filter.$or = [] as Array<any>;
-
-            fields.map((field) => {
-                filter.$or.push({
-                    [field]: {
-                        $regex: this.req.query.search,
-                        $options: "i",
-                    },
-                });
-            });
-        }
-
-        return filter;
+        this.pageNumber = parseInt(this.req.query.page as string);
+        this.limitNumber = parseInt(this.req.query.limit as string);
+        this.skipNumber = (parseInt(this.req.query.page as string) - 1) * parseInt(this.req.query.limit as string);
+        this.filterQuery = this.queryToObject(this.req.query.filter as string);
+        this.sortQuery = this.queryToObject(this.req.query.sort as string);
     }
 
     protected jsonOK(data: any) {
@@ -71,32 +52,56 @@ export default class BaseService {
         });
     }
 
+    protected searchQuery(fields: Array<string>): any {
+        const filter: any = {};
+
+        if (fields.length > 0 && !isEmpty(this.req.query.search)) {
+            filter.$or = [] as Array<any>;
+
+            fields.map((field) => {
+                filter.$or.push({
+                    [field]: {
+                        $regex: this.req.query.search,
+                        $options: "i",
+                    },
+                });
+            });
+        }
+
+        return filter;
+    }
+
     private queryToObject(query: string): Object {
         try {
             let queryArr = query.split(",");
             let queryFix = "";
-    
+
             queryArr.map((query) => {
                 let queryX = '"' + query;
                 let idx = 0;
-    
+
                 for (let i = 0; i < queryX.length; i++) {
                     if (queryX[i] === ":") {
                         idx = i;
                         break;
                     }
                 }
-    
+
                 queryX = splice(queryX, idx, 0, '"');
                 queryFix += queryX + ",";
             });
-    
+
             queryFix = queryFix.slice(0, -1);
             queryFix = "{" + queryFix + "}";
-    
+
             return JSON.parse(queryFix);
         } catch (err) {
             return JSON.parse("{}");
         }
+    }
+
+    @RouterGet("/")
+    default() {
+        this.jsonOK({ message: "何？" });
     }
 }

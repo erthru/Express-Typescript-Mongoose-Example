@@ -1,5 +1,5 @@
 import mongoose, { ConnectionOptions } from "mongoose";
-import { DB_URL } from "../helpers/constants";
+import { DB_URL } from "../helpers/environment";
 
 export default async () => {
     const options: ConnectionOptions = {

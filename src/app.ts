@@ -1,10 +1,10 @@
 import express from "express";
 import { createServer, Server } from "http";
-import { PORT } from "./helpers/constants";
+import { PORT } from "./helpers/environment";
 import cors from "cors";
 import db from "./configs/db";
-import routes from "./routes";
 import logger from "./configs/logger";
+import router from "./configs/router";
 
 const app = express();
 const server: Server = createServer(app);
@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static("public"));
 app.use(cors());
-app.use(routes);
+app.use(router);
 
 server.listen(PORT, async () => {
     await db();

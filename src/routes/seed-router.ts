@@ -1,14 +1,17 @@
-import { Request, Response } from "express";
+import { RouterPost, RouterRoot } from "../decorators/router-decorator";
 import userSchema from "../schemas/user-schema";
-import BaseService from "./base-service";
+import BaseRouter from "./base-router";
 import faker from "faker";
 import activitySchema from "../schemas/activity-schema";
+import { Request, Response } from "express";
 
-export default class SeedService extends BaseService {
+@RouterRoot("/seeds")
+export default class SeedRouter extends BaseRouter {
     constructor(req: Request, res: Response) {
         super(req, res);
     }
 
+    @RouterPost("/")
     async perform() {
         try {
             const userToSeedsTotal = 150;

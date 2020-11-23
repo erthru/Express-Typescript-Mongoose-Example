@@ -1,20 +1,23 @@
-import { Request, Response } from "express";
+import { RouterDelete, RouterGet, RouterPost, RouterPut, RouterRoot } from "../decorators/router-decorator";
 import userSchema, { UserDocument } from "../schemas/user-schema";
-import BaseService from "./base-service";
+import BaseRouter from "./base-router";
+import { Request, Response } from "express";
 
-export default class UserService extends BaseService {
+@RouterRoot("/users")
+export default class UserRouter extends BaseRouter {
     constructor(req: Request, res: Response) {
         super(req, res);
     }
 
-    async get() {
+    @RouterGet("/")
+    async getAll() {
         try {
             const filter = {
                 ...this.filterQuery,
                 ...this.searchQuery([UserDocument.firstName, UserDocument.lastName, UserDocument.email]),
             };
 
-            const users = await userSchema.find(filter).sort(this.sortQuery).skip(this.skipNumber).limit(this.limitQuery);
+            const users = await userSchema.find(filter).sort(this.sortQuery).skip(this.skipNumber).limit(this.limitNumber);
             const usersTotal = await userSchema.countDocuments(filter);
 
             this.jsonOK({ users: users, total: usersTotal });
@@ -23,16 +26,18 @@ export default class UserService extends BaseService {
         }
     }
 
+    @RouterGet("/:id")
     async getSingle() {
         try {
-            const user = await userSchema.findById(this._idFromParams);
+            const user = await userSchema.findById(this.req.params.id);
             this.jsonOK({ user: user });
         } catch (e: any) {
             this.jsonError(e);
         }
     }
 
-    async add() {
+    @RouterPost("/")
+    async create() {
         try {
             const user = await userSchema.create({
                 firstName: this.req.body.firstName,
@@ -46,10 +51,11 @@ export default class UserService extends BaseService {
         }
     }
 
+    @RouterPut("/:id")
     async update() {
         try {
             const user = await userSchema.findByIdAndUpdate(
-                this._idFromParams,
+                this.req.params.id,
                 {
                     firstName: this.req.body.firstName,
                     lastName: this.req.body.lastName,
@@ -64,9 +70,10 @@ export default class UserService extends BaseService {
         }
     }
 
-    async remove() {
+    @RouterDelete("/:id")
+    async delete() {
         try {
-            const user = await userSchema.findByIdAndDelete(this._idFromParams);
+            const user = await userSchema.findByIdAndDelete(this.req.params.id);
             this.jsonOK({ user: user });
         } catch (e: any) {
             this.jsonError(e);

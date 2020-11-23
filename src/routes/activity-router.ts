@@ -1,14 +1,17 @@
 import { Request, Response } from "express";
-import BaseService from "./base-service";
+import { RouterDelete, RouterGet, RouterPost, RouterRoot } from "../decorators/router-decorator";
 import activitySchema, { ActivityDocument } from "../schemas/activity-schema";
 import { UserDocument } from "../schemas/user-schema";
+import BaseRouter from "./base-router";
 
-export default class ActivityService extends BaseService {
+@RouterRoot("/activities")
+export default class ActivityRouter extends BaseRouter {
     constructor(req: Request, res: Response) {
         super(req, res);
     }
 
-    async get() {
+    @RouterGet("/")
+    async getAll() {
         try {
             const filter = {
                 ...this.filterQuery,
@@ -19,7 +22,7 @@ export default class ActivityService extends BaseService {
                 .find(filter)
                 .sort(this.sortQuery)
                 .skip(this.skipNumber)
-                .limit(this.limitQuery)
+                .limit(this.limitNumber)
                 .populate(UserDocument.schemaName);
 
             const activitiesTotal = await activitySchema.countDocuments(filter);
@@ -30,16 +33,18 @@ export default class ActivityService extends BaseService {
         }
     }
 
+    @RouterGet("/:id")
     async getSingle() {
         try {
-            const activity = await activitySchema.findById(this._idFromParams).populate(UserDocument.schemaName);
+            const activity = await activitySchema.findById(this.req.params.id).populate(UserDocument.schemaName);
             this.jsonOK({ activity: activity });
         } catch (e: any) {
             this.jsonError(e);
         }
     }
 
-    async add() {
+    @RouterPost("/")
+    async create() {
         try {
             const activity = await activitySchema.create({
                 name: this.req.body.name,
@@ -52,9 +57,10 @@ export default class ActivityService extends BaseService {
         }
     }
 
-    async remove() {
+    @RouterDelete("/:id")
+    async delete() {
         try {
-            const activity = await activitySchema.findByIdAndDelete(this._idFromParams);
+            const activity = await activitySchema.findByIdAndDelete(this.req.params.id);
             this.jsonOK({ activity: activity });
         } catch (e: any) {
             this.jsonError(e);
