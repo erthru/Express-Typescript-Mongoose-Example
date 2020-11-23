@@ -1,18 +1,23 @@
-import { RouterPost, RouterRoot } from "../decorators/router-decorator";
+import { Request, Response, Router } from "express";
 import userSchema from "../schemas/user-schema";
-import BaseRouter from "./base-router";
+import IRouter from "./router";
 import faker from "faker";
 import activitySchema from "../schemas/activity-schema";
-import { Request, Response } from "express";
+import { error, ok } from "../helpers/json";
 
-@RouterRoot("/seeds")
-export default class SeedRouter extends BaseRouter {
-    constructor(req: Request, res: Response) {
-        super(req, res);
+export default class SeedRouter implements IRouter {
+    router = Router();
+    basePath = "/seeds";
+
+    initRouter() {
+        this.router.post("/", this.perform);
     }
 
-    @RouterPost("/")
-    async perform() {
+    private constructor() {
+        this.initRouter();
+    }
+
+    private async perform(_: Request, res: Response) {
         try {
             const userToSeedsTotal = 150;
             const activityToSeedsTotal = 3454;
@@ -35,9 +40,9 @@ export default class SeedRouter extends BaseRouter {
                 });
             }
 
-            this.jsonCreated({ seedsTotal: seedsTotal });
+            ok(res, { seedsTotal: seedsTotal });
         } catch (e: any) {
-            this.jsonError(e);
+            error(res, e);
         }
     }
 }

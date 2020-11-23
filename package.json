@@ -2,12 +2,12 @@
     "name": "express-typescript-mongoose-example",
     "version": "1.0.0",
     "description": "",
-    "main": "src/app.ts",
+    "main": "src/server.ts",
     "scripts": {
-        "start": "pm2 start ts-node -- -P tsconfig.json src/app.ts",
+        "start": "pm2 start ts-node -- -P tsconfig.json src/server.ts",
         "stop": "pm2 stop ts-node",
         "monitor": "pm2 list",
-        "watch": "nodemon src/app.ts",
+        "watch": "nodemon src/server.ts",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "erthru",

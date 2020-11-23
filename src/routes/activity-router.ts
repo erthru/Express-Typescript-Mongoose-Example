@@ -1,69 +1,75 @@
-import { Request, Response } from "express";
-import { RouterDelete, RouterGet, RouterPost, RouterRoot } from "../decorators/router-decorator";
+import { Request, Response, Router } from "express";
+import { created, error, ok } from "../helpers/json";
+import queries, { searchQuery } from "../helpers/queries";
 import activitySchema, { ActivityDocument } from "../schemas/activity-schema";
 import { UserDocument } from "../schemas/user-schema";
-import BaseRouter from "./base-router";
+import IRouter from "./router";
 
-@RouterRoot("/activities")
-export default class ActivityRouter extends BaseRouter {
-    constructor(req: Request, res: Response) {
-        super(req, res);
+export default class ActivityRouter implements IRouter {
+    router = Router();
+    basePath = "/activities";
+
+    initRouter() {
+        this.router.get("/", this.getAll);
+        this.router.get("/:id", this.getSingle);
+        this.router.post("/", this.create);
+        this.router.delete("/:id", this.delete);
     }
 
-    @RouterGet("/")
-    async getAll() {
+    private constructor() {
+        this.initRouter();
+    }
+
+    private async getAll(req: Request, res: Response) {
         try {
             const filter = {
-                ...this.filterQuery,
-                ...this.searchQuery([ActivityDocument.name]),
+                ...queries(req).filter,
+                ...searchQuery(req, [ActivityDocument.name]),
             };
 
             const activities = await activitySchema
                 .find(filter)
-                .sort(this.sortQuery)
-                .skip(this.skipNumber)
-                .limit(this.limitNumber)
+                .sort(queries(req).sort)
+                .skip(queries(req).skip)
+                .limit(queries(req).limit)
                 .populate(UserDocument.schemaName);
 
             const activitiesTotal = await activitySchema.countDocuments(filter);
 
-            this.jsonOK({ activities: activities, total: activitiesTotal });
+            ok(res, { activities: activities, total: activitiesTotal });
         } catch (e: any) {
-            this.jsonError(e);
+            error(res, e);
         }
     }
 
-    @RouterGet("/:id")
-    async getSingle() {
+    private async getSingle(req: Request, res: Response) {
         try {
-            const activity = await activitySchema.findById(this.req.params.id).populate(UserDocument.schemaName);
-            this.jsonOK({ activity: activity });
+            const activity = await activitySchema.findById(req.params.id).populate(UserDocument.schemaName);
+            ok(res, { activity: activity });
         } catch (e: any) {
-            this.jsonError(e);
+            error(res, e);
         }
     }
 
-    @RouterPost("/")
-    async create() {
+    private async create(req: Request, res: Response) {
         try {
             const activity = await activitySchema.create({
-                name: this.req.body.name,
-                userId: this.req.body.userId,
+                name: req.body.name,
+                userId: req.body.userId,
             });
 
-            this.jsonCreated({ activity: activity });
+            created(res, { activity: activity });
         } catch (e: any) {
-            this.jsonError(e);
+            error(res, e);
         }
     }
 
-    @RouterDelete("/:id")
-    async delete() {
+    private async delete(req: Request, res: Response) {
         try {
-            const activity = await activitySchema.findByIdAndDelete(this.req.params.id);
-            this.jsonOK({ activity: activity });
+            const activity = await activitySchema.findByIdAndDelete(req.params.id);
+            ok(res, { activity: activity });
         } catch (e: any) {
-            this.jsonError(e);
+            error(res, e);
         }
     }
 }

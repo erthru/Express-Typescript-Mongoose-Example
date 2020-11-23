@@ -1,82 +1,93 @@
-import { RouterDelete, RouterGet, RouterPost, RouterPut, RouterRoot } from "../decorators/router-decorator";
+import { Request, Response, Router } from "express";
+import { created, error, ok } from "../helpers/json";
+import queries, { searchQuery } from "../helpers/queries";
 import userSchema, { UserDocument } from "../schemas/user-schema";
-import BaseRouter from "./base-router";
-import { Request, Response } from "express";
+import IRouter from "./router";
 
-@RouterRoot("/users")
-export default class UserRouter extends BaseRouter {
-    constructor(req: Request, res: Response) {
-        super(req, res);
+export default class UserRouter implements IRouter {
+    router = Router();
+    basePath = "/users";
+
+    initRouter() {
+        this.router.get("/", this.getAll);
+        this.router.get("/:id", this.getSingle);
+        this.router.post("/", this.create);
+        this.router.put("/:id", this.update);
+        this.router.delete("/:id", this.delete);
     }
 
-    @RouterGet("/")
-    async getAll() {
+    private constructor() {
+        this.initRouter();
+    }
+
+    private async getAll(req: Request, res: Response) {
         try {
             const filter = {
-                ...this.filterQuery,
-                ...this.searchQuery([UserDocument.firstName, UserDocument.lastName, UserDocument.email]),
+                ...queries(req).filter,
+                ...searchQuery(req, [UserDocument.firstName, UserDocument.lastName, UserDocument.email]),
             };
 
-            const users = await userSchema.find(filter).sort(this.sortQuery).skip(this.skipNumber).limit(this.limitNumber);
+            const users = await userSchema
+                .find(filter)
+                .sort(queries(req).sort)
+                .skip(queries(req).skip)
+                .limit(queries(req).limit);
+
             const usersTotal = await userSchema.countDocuments(filter);
 
-            this.jsonOK({ users: users, total: usersTotal });
+            ok(res, { users: users, total: usersTotal });
         } catch (e: any) {
-            this.jsonError(e);
+            error(res, e);
         }
     }
 
-    @RouterGet("/:id")
-    async getSingle() {
+    private async getSingle(req: Request, res: Response) {
         try {
-            const user = await userSchema.findById(this.req.params.id);
-            this.jsonOK({ user: user });
+            const user = await userSchema.findById(req.params.id);
+            ok(res, { user: user });
         } catch (e: any) {
-            this.jsonError(e);
+            error(res, e);
         }
     }
 
-    @RouterPost("/")
-    async create() {
+    private async create(req: Request, res: Response) {
         try {
             const user = await userSchema.create({
-                firstName: this.req.body.firstName,
-                lastName: this.req.body.lastName,
-                email: this.req.body.email,
+                firstName: req.body.firstName,
+                lastName: req.body.lastName,
+                email: req.body.email,
             });
 
-            this.jsonCreated({ user: user });
+            created(res, { user: user });
         } catch (e: any) {
-            this.jsonError(e);
+            error(res, e);
         }
     }
 
-    @RouterPut("/:id")
-    async update() {
+    private async update(req: Request, res: Response) {
         try {
             const user = await userSchema.findByIdAndUpdate(
-                this.req.params.id,
+                req.params.id,
                 {
-                    firstName: this.req.body.firstName,
-                    lastName: this.req.body.lastName,
-                    email: this.req.body.email,
+                    firstName: req.body.firstName,
+                    lastName: req.body.lastName,
+                    email: req.body.email,
                 },
                 { new: true }
             );
 
-            this.jsonOK({ user: user });
+            ok(res, { user: user });
         } catch (e: any) {
-            this.jsonError(e);
+            error(res, e);
         }
     }
 
-    @RouterDelete("/:id")
-    async delete() {
+    private async delete(req: Request, res: Response) {
         try {
-            const user = await userSchema.findByIdAndDelete(this.req.params.id);
-            this.jsonOK({ user: user });
+            const user = await userSchema.findByIdAndDelete(req.params.id);
+            ok(res, { user: user });
         } catch (e: any) {
-            this.jsonError(e);
+            error(res, e);
         }
     }
 }
