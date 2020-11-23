@@ -1,14 +1,6 @@
 import { Request } from "express";
 import { isEmpty, splice } from "./basic-tools";
 
-type Queries = {
-    page: number;
-    limit: number;
-    skip: number;
-    filter: any;
-    sort: any;
-};
-
 const queryToObject = (query: string): any => {
     try {
         let queryArr = query.split(",");
@@ -57,7 +49,7 @@ export const searchQuery = (req: Request, fields: Array<string>): any => {
     return filter;
 };
 
-export default (req: Request): Queries => {
+export default (req: Request) => {
     const page = parseInt(req.query.page as string);
     const limit = parseInt(req.query.limit as string);
     const skip = (parseInt(req.query.page as string) - 1) * parseInt(req.query.limit as string);

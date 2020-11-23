@@ -3,11 +3,10 @@ import { createServer } from "http";
 import db from "./configs/db";
 import logger from "./configs/logger";
 import { PORT } from "./helpers/environment";
-import ActivityRouter from "./routes/activity-router";
-import IRouter from "./routes/router";
-import SeedRouter from "./routes/seed-router";
-import UserRouter from "./routes/user-router";
 import cors from "cors";
+import userRouter from "./routes/user-router";
+import activityRouter from "./routes/activity-router";
+import seedRouter from "./routes/seed-router";
 
 const app = express();
 const server = createServer(app);
@@ -16,14 +15,12 @@ app.use(logger);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());
+
 app.use(express.static("public"));
 
-const routes = [SeedRouter, UserRouter, ActivityRouter];
-
-routes.map((Router) => {
-    const router: IRouter = new Router();
-    app.use(router.basePath, router.router);
-});
+app.use(seedRouter.path, seedRouter.router)
+app.use(userRouter.path, userRouter.router)
+app.use(activityRouter.path, activityRouter.router)
 
 server.listen(PORT, async () => {
     await db();
