@@ -1,8 +1,6 @@
 import { Request, Response } from "express";
-import { RouterGet, RouterRoot } from "../decorators/router-decorator";
 import { isEmpty, splice } from "../helpers/basic-tools";
 
-@RouterRoot("/")
 export default class BaseRouter {
     protected req!: Request;
     protected res!: Response;
@@ -98,10 +96,5 @@ export default class BaseRouter {
         } catch (err) {
             return JSON.parse("{}");
         }
-    }
-
-    @RouterGet("/")
-    default() {
-        this.jsonOK({ message: "何？" });
     }
 }
