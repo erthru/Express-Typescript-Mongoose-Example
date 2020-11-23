@@ -9,15 +9,15 @@ export default class ActivityRouter implements IRouter {
     router = Router();
     basePath = "/activities";
 
+    constructor() {
+        this.initRouter();
+    }
+
     initRouter() {
         this.router.get("/", this.getAll);
         this.router.get("/:id", this.getSingle);
         this.router.post("/", this.create);
         this.router.delete("/:id", this.delete);
-    }
-
-    private constructor() {
-        this.initRouter();
     }
 
     private async getAll(req: Request, res: Response) {

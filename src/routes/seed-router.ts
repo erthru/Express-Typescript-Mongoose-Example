@@ -9,12 +9,12 @@ export default class SeedRouter implements IRouter {
     router = Router();
     basePath = "/seeds";
 
-    initRouter() {
-        this.router.post("/", this.perform);
+    constructor() {
+        this.initRouter();
     }
 
-    private constructor() {
-        this.initRouter();
+    initRouter() {
+        this.router.post("/", this.perform);
     }
 
     private async perform(_: Request, res: Response) {

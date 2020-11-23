@@ -1,45 +1,35 @@
-import { Express } from "express";
+import express from "express";
 import { createServer } from "http";
 import db from "./configs/db";
+import logger from "./configs/logger";
+import { PORT } from "./helpers/environment";
+import ActivityRouter from "./routes/activity-router";
 import IRouter from "./routes/router";
+import SeedRouter from "./routes/seed-router";
+import UserRouter from "./routes/user-router";
+import cors from "cors";
 
-export default class App {
-    private port!: number;
-    private express!: Express;
+const app = express();
+const server = createServer(app);
 
-    constructor(port: number, express: Express, routes: Array<any> = [], middlewares: Array<any> = [], pub: any) {
-        this.port = port;
-        this.express = express;
-        this.registerRouter(routes);
-        this.registerMiddleware(middlewares);
-        this.registerPub(pub);
-    }
+app.use(logger);
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cors());
+app.use(express.static("public"));
 
-    private registerRouter(routes: Array<any>) {
-        routes.map((Router) => {
-            const router: IRouter = new Router();
-            this.express.use(router.basePath, router.router);
-        });
-    }
+const routes = [SeedRouter, UserRouter, ActivityRouter];
 
-    private registerMiddleware(middlewares: Array<any>) {
-        middlewares.map((middleware) => {
-            this.express.use(middleware);
-        });
-    }
+routes.map((Router) => {
+    const router: IRouter = new Router();
+    app.use(router.basePath, router.router);
+});
 
-    private registerPub(pub: any) {
-        this.express.use(pub);
-    }
+server.listen(PORT, async () => {
+    await db();
 
-    listen() {
-        createServer(this.express).listen(this.port, async () => {
-            await db();
-
-            console.log("⚡️[DATABASE]: CONNECTED");
-            console.log("⚡️[SERVER]: RUNNING");
-            console.log("⚡️[PORT]: " + this.port);
-            console.log("⚡️[MESSAGE]: エブリシングOK、頑張ってねー、エルトホルくん。ヽ(o＾▽＾o)ノ");
-        });
-    }
-}
+    console.log("⚡️[DATABASE]: CONNECTED");
+    console.log("⚡️[SERVER]: RUNNING");
+    console.log("⚡️[PORT]: " + PORT);
+    console.log("⚡️[MESSAGE]: エブリシングOK、頑張ってねー、エルトホルくん。ヽ(o＾▽＾o)ノ");
+});

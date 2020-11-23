@@ -8,16 +8,16 @@ export default class UserRouter implements IRouter {
     router = Router();
     basePath = "/users";
 
+    constructor() {
+        this.initRouter();
+    }
+
     initRouter() {
         this.router.get("/", this.getAll);
         this.router.get("/:id", this.getSingle);
         this.router.post("/", this.create);
         this.router.put("/:id", this.update);
         this.router.delete("/:id", this.delete);
-    }
-
-    private constructor() {
-        this.initRouter();
     }
 
     private async getAll(req: Request, res: Response) {
